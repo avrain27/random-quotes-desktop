@@ -41,7 +41,7 @@ export default class RandomQuotesExtension extends Extension {
         this._panelButton.add_child(icon);
 
         // Open preferences on left click
-        this._panelButton.connect('button-press-event', (actor, event) => {
+        this._panelButtonClickId = this._panelButton.connect('button-press-event', (actor, event) => {
             if (event.get_button() === 1) {
                 this.openPreferences();
                 return Clutter.EVENT_STOP;
@@ -108,6 +108,10 @@ export default class RandomQuotesExtension extends Extension {
         }
 
         if (this._panelButton) {
+            if (this._panelButtonClickId) {
+                this._panelButton.disconnect(this._panelButtonClickId);
+                this._panelButtonClickId = null;
+            }
             this._panelButton.destroy();
             this._panelButton = null;
         }
