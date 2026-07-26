@@ -1,0 +1,13 @@
+{
+    "name": "Random Quotes on Desktop",
+    "description": "Displays a random quote on the desktop background. Minimal and simple.",
+    "uuid": "random-quotes-desktop@avrain27",
+    "shell-version": [
+        "48",
+        "49",
+        "50",
+        "51"
+    ],
+    "url": "https://github.com/avrain27/random-quotes-desktop",
+    "version": 1
+}

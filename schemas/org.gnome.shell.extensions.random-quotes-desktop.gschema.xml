@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.random-quotes-desktop" path="/org/gnome/shell/extensions/random-quotes-desktop/">
+    <key type="s" name="quotes">
+      <default>"Stay curious.\nSimplicity is the ultimate sophistication.\nIt always seems impossible until it's done.\nThe best time to plant a tree was 20 years ago. The second best time is now.\nBe yourself; everyone else is already taken.\nIn the middle of difficulty lies opportunity."</default>
+    </key>
+    <key type="i" name="interval">
+      <default>60</default>
+    </key>
+    <key type="s" name="mode">
+      <default>"random"</default>
+      <summary>random or sequential</summary>
+    </key>
+    <key type="s" name="position">
+      <default>"bottom-right"</default>
+    </key>
+    <key type="i" name="font-size">
+      <default>18</default>
+    </key>
+    <key type="s" name="text-color">
+      <default>"#ffffff"</default>
+    </key>
+    <key type="i" name="dark-font-size">
+      <default>18</default>
+    </key>
+    <key type="s" name="dark-text-color">
+      <default>"#dddddd"</default>
+    </key>
+    <key type="d" name="opacity">
+      <default>0.95</default>
+    </key>
+    <key type="d" name="shadow">
+      <default>4.0</default>
+    </key>
+  </schema>
+</schemalist>
