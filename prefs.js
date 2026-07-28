@@ -5,19 +5,19 @@ import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/
 
 export default class RandomQuotesPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-        const settings = this.getSettings('org.gnome.shell.extensions.random-quotes-desktop');
+
+        const settings = this.getSettings();
         window.set_default_size(650, 750);
 
         const page = new Adw.PreferencesPage();
         window.add(page);
 
-        // ========== Appearance ==========
-        const appearanceGroup = new Adw.PreferencesGroup({ title: 'Appearance' });
-        page.add(appearanceGroup);
-
-        // Light Theme
-        const lightGroup = new Adw.PreferencesGroup({ title: 'Light Theme' });
-        appearanceGroup.add(lightGroup);
+        // ========== 1. Light Theme ==========
+        const lightThemeGroup = new Adw.PreferencesGroup({ 
+            title: 'Light Theme',
+            description: 'Applied when GNOME is in Light Mode'
+        });
+        page.add(lightThemeGroup);
 
         const sizeSpin = new Gtk.SpinButton({
             adjustment: new Gtk.Adjustment({ lower: 8, upper: 72, step_increment: 1, value: settings.get_int('font-size') }),
@@ -25,18 +25,21 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         });
         const sizeRow = new Adw.ActionRow({ title: 'Font size (pt)' });
         sizeRow.add_suffix(sizeSpin);
-        lightGroup.add(sizeRow);
+        lightThemeGroup.add(sizeRow);
         settings.bind('font-size', sizeSpin.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const colorEntry = new Gtk.Entry({ text: settings.get_string('text-color'), valign: Gtk.Align.CENTER });
-        const colorRow = new Adw.ActionRow({ title: 'Text color' });
+        const colorRow = new Adw.ActionRow({ title: 'Text color (Hex or Name)' });
         colorRow.add_suffix(colorEntry);
-        lightGroup.add(colorRow);
+        lightThemeGroup.add(colorRow);
         settings.bind('text-color', colorEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
 
-        // Dark Theme
-        const darkGroup = new Adw.PreferencesGroup({ title: 'Dark Theme' });
-        appearanceGroup.add(darkGroup);
+        // ========== 2. Dark Theme ==========
+        const darkThemeGroup = new Adw.PreferencesGroup({ 
+            title: 'Dark Theme',
+            description: 'Applied when GNOME is in Dark Mode'
+        });
+        page.add(darkThemeGroup);
 
         const darkSizeSpin = new Gtk.SpinButton({
             adjustment: new Gtk.Adjustment({ lower: 8, upper: 72, step_increment: 1, value: settings.get_int('dark-font-size') }),
@@ -44,16 +47,19 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         });
         const darkSizeRow = new Adw.ActionRow({ title: 'Font size (pt)' });
         darkSizeRow.add_suffix(darkSizeSpin);
-        darkGroup.add(darkSizeRow);
+        darkThemeGroup.add(darkSizeRow);
         settings.bind('dark-font-size', darkSizeSpin.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const darkColorEntry = new Gtk.Entry({ text: settings.get_string('dark-text-color'), valign: Gtk.Align.CENTER });
-        const darkColorRow = new Adw.ActionRow({ title: 'Text color' });
+        const darkColorRow = new Adw.ActionRow({ title: 'Text color (Hex or Name)' });
         darkColorRow.add_suffix(darkColorEntry);
-        darkGroup.add(darkColorRow);
+        darkThemeGroup.add(darkColorRow);
         settings.bind('dark-text-color', darkColorEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
 
-        // Opacity & Shadow
+        // ========== 3. Appearance ==========
+        const appearanceGroup = new Adw.PreferencesGroup({ title: 'Appearance' });
+        page.add(appearanceGroup);
+
         const opacityRow = new Adw.SpinRow({
             title: 'Opacity',
             adjustment: new Gtk.Adjustment({ lower: 0.1, upper: 1.0, step_increment: 0.05, value: settings.get_double('opacity') }),
@@ -70,7 +76,27 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         appearanceGroup.add(shadowRow);
         settings.bind('shadow', shadowRow.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
 
-        // ========== Behavior ==========
+        // ========== 4. Layout (New Group) ==========
+        const layoutGroup = new Adw.PreferencesGroup({ 
+            title: 'Layout',
+            description: 'Control the dimensions and boundaries of the quotes.'
+        });
+        page.add(layoutGroup);
+
+        const maxWidthRow = new Adw.SpinRow({
+            title: 'Maximum Width (px)',
+            subtitle: 'Limits how wide the quote text box can be before wrapping.',
+            adjustment: new Gtk.Adjustment({
+                lower: 100,
+                upper: 3000,
+                step_increment: 10,
+                value: settings.get_int('max-width')
+            })
+        });
+        layoutGroup.add(maxWidthRow);
+        settings.bind('max-width', maxWidthRow.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // ========== 5. Behavior ==========
         const behaviorGroup = new Adw.PreferencesGroup({ title: 'Behavior' });
         page.add(behaviorGroup);
 
@@ -110,7 +136,7 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         });
         behaviorGroup.add(positionRow);
 
-        // ========== Quotes (Multi-line ListBox) ==========
+        // ========== 6. Quotes (Multi-line ListBox) ==========
         const quotesGroup = new Adw.PreferencesGroup({
             title: 'Quotes',
             description: 'Each box is one quote. You can write multi-line quotes.'

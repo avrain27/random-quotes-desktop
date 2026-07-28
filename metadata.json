@@ -2,11 +2,12 @@
     "name": "Random Quotes on Desktop",
     "description": "Displays a random quote on the desktop background. Minimal and simple.",
     "uuid": "random-quotes-desktop@avrain27",
+    "settings-schema": "org.gnome.shell.extensions.random-quotes-desktop", 
     "shell-version": [
         "48",
         "49",
         "50"
     ],
     "url": "https://github.com/avrain27/random-quotes-desktop",
-    "version": 1
+    "version": 2
 }

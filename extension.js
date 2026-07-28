@@ -6,8 +6,6 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
-const SCHEMA_ID = 'org.gnome.shell.extensions.random-quotes-desktop';
-
 export default class RandomQuotesExtension extends Extension {
     constructor(metadata) {
         super(metadata);
@@ -23,7 +21,7 @@ export default class RandomQuotesExtension extends Extension {
     }
 
     enable() {
-        this._settings = this.getSettings(SCHEMA_ID);
+        this._settings = this.getSettings();
 
         // Dark theme detection
         this._interfaceSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
@@ -31,7 +29,6 @@ export default class RandomQuotesExtension extends Extension {
             this._updateAllStyles();
         });
 
-        // ===== Panel Button =====
         this._panelButton = new PanelMenu.Button(0.0, 'Random Quotes', true);
 
         const icon = new St.Icon({
@@ -40,9 +37,12 @@ export default class RandomQuotesExtension extends Extension {
         });
         this._panelButton.add_child(icon);
 
-        // Open preferences on left click
         this._panelButtonClickId = this._panelButton.connect('button-press-event', (actor, event) => {
             if (event.get_button() === 1) {
+                this._updateAllQuotes();
+                return Clutter.EVENT_STOP;
+            }
+            else if (event.get_button() === 3) {
                 this.openPreferences();
                 return Clutter.EVENT_STOP;
             }
@@ -50,7 +50,6 @@ export default class RandomQuotesExtension extends Extension {
         });
 
         Main.panel.addToStatusArea('random-quotes-desktop', this._panelButton);
-        // ========================
 
         this._createLabelsForAllMonitors();
         this._updateAllQuotes();
@@ -130,6 +129,8 @@ export default class RandomQuotesExtension extends Extension {
                 reactive: false,
                 opacity: 0,
             });
+            
+            label.set_pivot_point(0.5, 0.5);
 
             label.clutter_text.line_wrap = true;
             label.clutter_text.line_wrap_mode = 2;
@@ -155,14 +156,8 @@ export default class RandomQuotesExtension extends Extension {
 
         // Fallback if the user cleared everything
         if (quotes.length === 0) {
-            return [
-                "Stay curious.",
-                "Simplicity is the ultimate sophistication.",
-                "It always seems impossible until it's done.",
-                "The best time to plant a tree was 20 years ago. The second best time is now.",
-                "Be yourself; everyone else is already taken.",
-                "In the middle of difficulty lies opportunity."
-            ];
+            const defaultStr = this._settings.get_default_value('quotes').unpack();
+            return defaultStr.trim().split('\n').filter(q => q.trim() !== '');
         }
         return quotes;
     }
@@ -185,26 +180,13 @@ export default class RandomQuotesExtension extends Extension {
 
         this._labels.forEach(item => {
             if (item.label) {
-                item.label.ease({
-                    opacity: 0,
-                    duration: 300,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        item.label.set_text(quote);
-                        item.label.clutter_text.line_wrap = true;
-                        item.label.clutter_text.line_wrap_mode = 2;
-                        item.label.clutter_text.ellipsize = 0;
-
-                        this._updateStyle(item.label);
-                        this._setPosition(item.label, item.monitorIndex);
-
-                        item.label.ease({
-                            opacity: this._settings.get_double('opacity') * 255,
-                            duration: 300,
-                            mode: Clutter.AnimationMode.EASE_IN_QUAD
-                        });
-                    }
-                });
+                // Simple, direct update without complex animations
+                item.label.set_text(quote);
+                this._updateStyle(item.label);
+                this._setPosition(item.label, item.monitorIndex);
+                
+                // Apply target opacity directly
+                item.label.opacity = this._settings.get_double('opacity') * 255;
             }
         });
     }
@@ -217,7 +199,10 @@ export default class RandomQuotesExtension extends Extension {
 
     _updateAllPositions() {
         this._labels.forEach(item => {
-            if (item.label) this._setPosition(item.label, item.monitorIndex);
+            if (item.label) {
+                this._setPosition(item.label, item.monitorIndex);
+                this._updateStyle(item.label);
+            }
         });
     }
 
@@ -238,12 +223,21 @@ export default class RandomQuotesExtension extends Extension {
         const shadow = this._settings.get_double('shadow');
 
         label.set_opacity(opacity * 255);
+        
+        const pos = this._settings.get_string('position');
+        let textAlign = 'left';
+        if (pos.includes('right')) {
+            textAlign = 'right';
+        } else if (pos.includes('center')) {
+            textAlign = 'center';
+        }
 
         label.set_style(`
             font-size: ${fontSize}pt;
             color: ${textColor};
             text-shadow: 0 0 ${shadow}px rgba(0,0,0,0.8);
             padding: 40px;
+            text-align: ${textAlign};
         `);
     }
 
@@ -255,12 +249,11 @@ export default class RandomQuotesExtension extends Extension {
 
         const pos = this._settings.get_string('position');
         const padding = 40;
-
-        label.clutter_text.line_wrap = true;
-        label.clutter_text.line_wrap_mode = 2;
-        label.clutter_text.ellipsize = 0;
-
-        const maxWidth = Math.floor(monitor.width * 0.70);
+        
+        const settingMaxWidth = this._settings.get_int('max-width');
+        const monitorMaxWidth = Math.floor(monitor.width * 0.70);
+        const maxWidth = Math.min(settingMaxWidth, monitorMaxWidth);
+        
         label.clutter_text.set_width(maxWidth);
 
         let [minW, natW] = label.get_preferred_width(-1);

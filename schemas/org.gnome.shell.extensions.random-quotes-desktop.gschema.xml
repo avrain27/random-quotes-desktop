@@ -5,7 +5,7 @@
       <default>"Stay curious.\nSimplicity is the ultimate sophistication.\nIt always seems impossible until it's done.\nThe best time to plant a tree was 20 years ago. The second best time is now.\nBe yourself; everyone else is already taken.\nIn the middle of difficulty lies opportunity."</default>
     </key>
     <key type="i" name="interval">
-      <default>60</default>
+      <default>120</default>
     </key>
     <key type="s" name="mode">
       <default>"random"</default>
@@ -15,13 +15,13 @@
       <default>"bottom-right"</default>
     </key>
     <key type="i" name="font-size">
-      <default>18</default>
+      <default>35</default>
     </key>
     <key type="s" name="text-color">
       <default>"#ffffff"</default>
     </key>
     <key type="i" name="dark-font-size">
-      <default>18</default>
+      <default>35</default>
     </key>
     <key type="s" name="dark-text-color">
       <default>"#dddddd"</default>
@@ -32,5 +32,10 @@
     <key type="d" name="shadow">
       <default>4.0</default>
     </key>
+    <key type="i" name="max-width">
+      <default>800</default>
+      <summary>Maximum width of the quote label in pixels</summary>
+    </key>
   </schema>
 </schemalist>
+

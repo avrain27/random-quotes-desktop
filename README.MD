@@ -1,4 +1,3 @@
-```markdown
 # Random Quotes on Desktop
 
 A simple GNOME Shell extension that displays rotating quotes on the desktop background.
@@ -10,9 +9,12 @@ A simple GNOME Shell extension that displays rotating quotes on the desktop back
 - 9 position options (corners, edges, center)
 - Separate styling for light and dark themes
 - Opacity and text shadow controls
+- Maximum width control for quote text
 - Multi-monitor support
 - Multi-line quote editor in preferences
-- Top-bar icon for quick access to settings
+- Top-bar icon:
+  - Left-click → cycle to the next quote
+  - Right-click → open preferences
 
 ## Installation
 
@@ -32,14 +34,15 @@ gnome-extensions enable random-quotes-desktop@avrain27
 ## Usage
 
 1. Quotes appear on the desktop background
-2. Click the icon in the top bar to open settings
-3. Add, edit, or remove quotes in the preferences window
-4. Choose between Random or Sequential mode
-5. Adjust position, colors, opacity, and update interval
+2. **Left-click** the top-bar icon to show the next quote
+3. **Right-click** the top-bar icon to open settings
+4. Add, edit, or remove quotes in the preferences window
+5. Choose between Random or Sequential mode
+6. Adjust position, colors, opacity, maximum width, and update interval
 
 ## Accessing Preferences
 Open preferences via:
-1. Clicking the top-bar icon
+1. Right-clicking the top-bar icon
 2. GNOME Extensions application
 3. Command line:
 ```bash
@@ -47,7 +50,7 @@ gnome-extensions prefs random-quotes-desktop@avrain27
 ```
 
 ## Compatibility
-- GNOME Shell 48, 49, 50, 51
+- GNOME Shell 48, 49, 50
 - Wayland and X11 supported
 
 ## Troubleshooting
@@ -69,4 +72,3 @@ Enjoying this extension? Help support its development:
 
 ## License
 GNU GPL v3
-```
