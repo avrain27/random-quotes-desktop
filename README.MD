@@ -5,12 +5,9 @@ A simple GNOME Shell extension that displays rotating quotes on the desktop back
 ## Features
 
 - Random or sequential quote rotation
-- Configurable update interval
-- 9 position options (corners, edges, center)
-- Separate styling for light and dark themes
-- Opacity and text shadow controls
-- Maximum width control for quote text
 - Multi-monitor support
+- Separate styling for light and dark themes
+- Configurable position, opacity, shadow, and maximum width
 - Multi-line quote editor in preferences
 - Top-bar icon:
   - Left-click → cycle to the next quote

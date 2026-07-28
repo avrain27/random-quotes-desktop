@@ -151,19 +151,31 @@ export default class RandomQuotesExtension extends Extension {
     }
 
     _getQuotes() {
-        const str = this._settings.get_string('quotes') || '';
-        const quotes = str.trim().split('\n').filter(q => q.trim() !== '');
+        const quotes = this._settings.get_strv('quotes');
 
         // Fallback if the user cleared everything
         if (quotes.length === 0) {
-            const defaultStr = this._settings.get_default_value('quotes').unpack();
-            return defaultStr.trim().split('\n').filter(q => q.trim() !== '');
+            return this._settings.get_default_value('quotes').deep_unpack();
         }
         return quotes;
     }
 
     _getRandomQuote(quotes) {
-        return quotes[Math.floor(Math.random() * quotes.length)];
+        // If there's only 1 (or 0) quotes, we have no choice but to return it
+        if (quotes.length <= 1) {
+            return quotes[0] || "No quotes available.";
+        }
+        
+        let newIndex;
+        // Keep generating a new index until it's different from the current one
+        do {
+            newIndex = Math.floor(Math.random() * quotes.length);
+        } while (newIndex === this._currentIndex);
+        
+        // Update the current index so the next random pick knows what to avoid
+        this._currentIndex = newIndex;
+        
+        return quotes[this._currentIndex];
     }
 
     _getNextQuote(quotes) {
@@ -174,19 +186,14 @@ export default class RandomQuotesExtension extends Extension {
     _updateAllQuotes() {
         const quotes = this._getQuotes();
         const mode = this._settings.get_string('mode');
-        const quote = mode === 'sequential'
-            ? this._getNextQuote(quotes)
-            : this._getRandomQuote(quotes);
+            
+        const quote = (mode === 'sequential' ? this._getNextQuote(quotes) : this._getRandomQuote(quotes)) || "No quotes available.";
 
         this._labels.forEach(item => {
             if (item.label) {
-                // Simple, direct update without complex animations
                 item.label.set_text(quote);
                 this._updateStyle(item.label);
                 this._setPosition(item.label, item.monitorIndex);
-                
-                // Apply target opacity directly
-                item.label.opacity = this._settings.get_double('opacity') * 255;
             }
         });
     }

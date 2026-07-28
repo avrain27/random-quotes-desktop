@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.random-quotes-desktop" path="/org/gnome/shell/extensions/random-quotes-desktop/">
-    <key type="s" name="quotes">
-      <default>"Stay curious.\nSimplicity is the ultimate sophistication.\nIt always seems impossible until it's done.\nThe best time to plant a tree was 20 years ago. The second best time is now.\nBe yourself; everyone else is already taken.\nIn the middle of difficulty lies opportunity."</default>
+    <key type="as" name="quotes">
+      <default>["Stay curious.", "Simplicity is the ultimate sophistication.", "It always seems impossible until it's done.", "The best time to plant a tree was 20 years ago. The second best time is now.", "Be yourself; everyone else is already taken.", "In the middle of difficulty lies opportunity."]</default>
     </key>
     <key type="i" name="interval">
       <default>120</default>

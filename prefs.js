@@ -161,7 +161,8 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
                 }
                 child = child.get_next_sibling();
             }
-            settings.set_string('quotes', quotes.join('\n'));
+            //settings.set_string('quotes', quotes.join('\n'));
+            settings.set_strv('quotes', quotes);
         };
 
         // Create one multi-line quote row
@@ -213,7 +214,8 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         };
 
         // Load existing quotes
-        const existing = settings.get_string('quotes').split('\n').filter(q => q.trim());
+        //const existing = settings.get_string('quotes').split('\n').filter(q => q.trim());
+        const existing = settings.get_strv('quotes');
         existing.forEach(q => createQuoteRow(q));
 
         // If somehow empty, just show one empty row
