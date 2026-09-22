@@ -47,7 +47,7 @@ gnome-extensions prefs random-quotes-desktop@avrain27
 ```
 
 ## Compatibility
-- GNOME Shell 48, 49, 50
+- GNOME Shell 48, 49, 50, 51
 - Wayland and X11 supported
 
 ## Troubleshooting
