@@ -9,7 +9,7 @@ A simple GNOME Shell extension that displays rotating quotes on the desktop back
 - Separate styling for light and dark themes
 - Configurable position, opacity, shadow, and maximum width
 - Multi-line quote editor in preferences
-- Top-bar icon:
+- Optional Top-bar icon:
   - Left-click → cycle to the next quote
   - Right-click → open preferences
 
@@ -35,7 +35,7 @@ gnome-extensions enable random-quotes-desktop@avrain27
 3. **Right-click** the top-bar icon to open settings
 4. Add, edit, or remove quotes in the preferences window
 5. Choose between Random or Sequential mode
-6. Adjust position, colors, opacity, maximum width, and update interval
+6. Adjust font, position, colors, opacity, maximum width, and update interval
 
 ## Accessing Preferences
 Open preferences via:

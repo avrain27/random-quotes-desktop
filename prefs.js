@@ -1,6 +1,8 @@
 import Adw from 'gi://Adw';
 import Gtk from 'gi://Gtk';
 import Gio from 'gi://Gio';
+import PangoCairo from 'gi://PangoCairo';
+import Gdk from 'gi://Gdk';
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export default class RandomQuotesPreferences extends ExtensionPreferences {
@@ -12,6 +14,27 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         const page = new Adw.PreferencesPage();
         window.add(page);
 
+        // A color is valid if GTK can parse it: hex (#fff, #ffffff),
+        // rgb()/rgba(), or a CSS color name ("white").
+        const isValidColor = value => {
+            const v = value.trim();
+            return v !== '' && new Gdk.RGBA().parse(v);
+        };
+
+        // Invalid input is rejected outright: the entry shows an error style,
+        // but the setting keeps its last valid value.
+        const validateColorEntry = (entry, key) => {
+            const value = entry.get_text().trim();
+            if (isValidColor(value)) {
+                entry.remove_css_class('error');
+                entry.set_tooltip_text(null);
+                settings.set_string(key, value);
+            } else {
+                entry.add_css_class('error');
+                entry.set_tooltip_text('Not a valid color. Use a CSS name ("white") or hex ("#ffffff").');
+            }
+        };
+        
         // ========== 1. Light Theme ==========
         const lightThemeGroup = new Adw.PreferencesGroup({ 
             title: 'Light Theme',
@@ -29,10 +52,10 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         settings.bind('font-size', sizeSpin.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const colorEntry = new Gtk.Entry({ text: settings.get_string('text-color'), valign: Gtk.Align.CENTER });
+        colorEntry.connect('changed', () => validateColorEntry(colorEntry, 'text-color'));
         const colorRow = new Adw.ActionRow({ title: 'Text color (Hex or Name)' });
         colorRow.add_suffix(colorEntry);
         lightThemeGroup.add(colorRow);
-        settings.bind('text-color', colorEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
 
         // ========== 2. Dark Theme ==========
         const darkThemeGroup = new Adw.PreferencesGroup({ 
@@ -51,10 +74,10 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         settings.bind('dark-font-size', darkSizeSpin.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const darkColorEntry = new Gtk.Entry({ text: settings.get_string('dark-text-color'), valign: Gtk.Align.CENTER });
+        darkColorEntry.connect('changed', () => validateColorEntry(darkColorEntry, 'dark-text-color'));
         const darkColorRow = new Adw.ActionRow({ title: 'Text color (Hex or Name)' });
         darkColorRow.add_suffix(darkColorEntry);
         darkThemeGroup.add(darkColorRow);
-        settings.bind('dark-text-color', darkColorEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
 
         // ========== 3. Appearance ==========
         const appearanceGroup = new Adw.PreferencesGroup({ title: 'Appearance' });
@@ -75,6 +98,68 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         });
         appearanceGroup.add(shadowRow);
         settings.bind('shadow', shadowRow.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
+        
+        // --- Font family ---
+        // Enumerate the fonts actually installed on this system via Pango.
+        const pangoFamilies = PangoCairo.FontMap.get_default()
+            .list_families()
+            .map(f => f.get_name());
+
+        const GENERIC_FAMILIES = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui'];
+        const isKnownFamily = name => {
+            const n = name.trim().toLowerCase();
+            return GENERIC_FAMILIES.includes(n) ||
+                   pangoFamilies.some(f => f.toLowerCase() === n);
+        };
+        
+        const fontFamilyEntry = new Gtk.Entry({
+            text: settings.get_string('font-family'),
+            valign: Gtk.Align.CENTER,
+            placeholder_text: 'e.g. "DejaVu Serif", monospace'
+        });
+        
+        const validateFontFamily = () => {
+            const value = fontFamilyEntry.get_text().trim();
+            if (!value || isKnownFamily(value)) {
+                fontFamilyEntry.remove_css_class('error');
+                fontFamilyEntry.set_tooltip_text(null);
+                settings.set_string('font-family', value);
+            } else {
+                fontFamilyEntry.add_css_class('error');
+                fontFamilyEntry.set_tooltip_text('Unknown font family. Pick one from the list below or check the spelling.');
+            }
+        };
+        fontFamilyEntry.connect('changed', validateFontFamily);
+        
+        const fontFamilyRow = new Adw.ActionRow({
+            title: 'Font family',
+            subtitle: 'Leave empty to use the system default.'
+        });
+        fontFamilyRow.add_suffix(fontFamilyEntry);
+        appearanceGroup.add(fontFamilyRow);
+        
+        // Dropdown of installed fonts; selecting one writes it into the entry.
+        const sortedFamilies = [...pangoFamilies].sort((a, b) => a.localeCompare(b));
+        const fontModel = new Gtk.StringList({ strings: sortedFamilies });
+        const fontComboRow = new Adw.ComboRow({
+            title: 'Installed fonts',
+            subtitle: 'Pick an installed font, or type a custom name above.',
+            model: fontModel
+        });
+        const currentFont = settings.get_string('font-family').trim().toLowerCase();
+        const currentIdx = sortedFamilies.findIndex(f => f.toLowerCase() === currentFont);
+        if (currentIdx >= 0) {
+            fontComboRow.set_selected(currentIdx);
+        }
+        fontComboRow.connect('notify::selected', () => {
+            const name = fontModel.get_string(fontComboRow.get_selected());
+            if (name) {
+                fontFamilyEntry.set_text(name);
+            }
+        });
+        appearanceGroup.add(fontComboRow);
+
+        validateFontFamily();
 
         // ========== 4. Layout (New Group) ==========
         const layoutGroup = new Adw.PreferencesGroup({ 
@@ -99,6 +184,14 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         // ========== 5. Behavior ==========
         const behaviorGroup = new Adw.PreferencesGroup({ title: 'Behavior' });
         page.add(behaviorGroup);
+        
+        const showPanelRow = new Adw.SwitchRow({
+            title: 'Show panel button',
+            subtitle: 'Display icon in the top panel. Left-click for a new quote, right-click for settings.',
+            active: settings.get_boolean('show-panel-button')
+        });
+        behaviorGroup.add(showPanelRow);
+        settings.bind('show-panel-button', showPanelRow, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         const modeRow = new Adw.ComboRow({
             title: 'Quote mode',
@@ -161,7 +254,6 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
                 }
                 child = child.get_next_sibling();
             }
-            //settings.set_string('quotes', quotes.join('\n'));
             settings.set_strv('quotes', quotes);
         };
 
@@ -214,7 +306,6 @@ export default class RandomQuotesPreferences extends ExtensionPreferences {
         };
 
         // Load existing quotes
-        //const existing = settings.get_string('quotes').split('\n').filter(q => q.trim());
         const existing = settings.get_strv('quotes');
         existing.forEach(q => createQuoteRow(q));
 

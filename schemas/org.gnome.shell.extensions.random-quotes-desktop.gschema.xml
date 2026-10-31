@@ -20,6 +20,10 @@
     <key type="s" name="text-color">
       <default>"#ffffff"</default>
     </key>
+    <key type="s" name="font-family">
+      <default>""</default>
+      <summary>Empty means the system default font.</summary>
+    </key>
     <key type="i" name="dark-font-size">
       <default>35</default>
     </key>
@@ -35,6 +39,10 @@
     <key type="i" name="max-width">
       <default>800</default>
       <summary>Maximum width of the quote label in pixels</summary>
+    </key>
+    <key type="b" name="show-panel-button">
+      <default>true</default>
+      <summary>Show the extension button in the top panel</summary>
     </key>
   </schema>
 </schemalist>
